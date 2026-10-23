@@ -1,0 +1,53 @@
+#ifndef DOTS_HPP
+#define DOTS_HPP
+
+
+#include "h.hpp"
+
+
+class OurTimer
+{
+public:
+	OurTimer(std::string name): name_(std::move(name)), start_(std::chrono::steady_clock::now()) {}
+	~OurTimer() {
+		const auto end = std::chrono::steady_clock::now();
+		const auto res = std::chrono::duration_cast<std::chrono::milliseconds>(end - start_);
+		std::cout << name_ << ": " << res << '\n';
+	}
+	std::string name_;
+	std::chrono::steady_clock::time_point start_;
+};
+
+struct Dot
+ {
+ 	float x;
+ 	float y;
+ };
+
+class Dots
+{
+public:
+	std::vector<Dot> dots;
+	std::vector<float> distances;
+	std::vector<int> neighbour_i;
+
+	Dots();
+	~Dots();
+
+	void parse(std::string file_name);
+	void count_distance_base();
+	void print();
+
+	// S neighbours vector int
+	// method parsing (file format: 1 2.2 /n 3 4.0)
+	// print
+	// solve
+
+	// O(N^2); check
+	// ||;
+	// #
+	// || + #
+	// [_] (+ ||) ??
+};
+
+#endif
