@@ -36,6 +36,8 @@ public:
 
 	void parse(std::string file_name);
 	void count_distance_base();
+	void count_distance_threads();
+	void get_neighbours(int start_i, int end_i);
 	void print();
 
 	// S neighbours vector int

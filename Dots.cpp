@@ -23,13 +23,21 @@ void Dots::parse(std::string file_name)
 		}
 	}
 	file.close();
+	distances.resize(dots.size());
+	neighbour_i.resize(dots.size());
 }
 
 
 void Dots::count_distance_base()
 {
-	// th_f (dots), len(dots): th_n ; start_i end_i
-	for (int i=0; i<dots.size(); i++)
+	get_neighbours(0, dots.size()-1);
+}
+
+
+
+void Dots::get_neighbours(int start_i, int end_i)
+{
+	for (int i=start_i; i<=end_i; i++)
 	{
 		int min_i = i ? 0 : 1; // ~ if (i) {return 0} {return 1}
 		float cur_min_dist = 10000000;
@@ -47,18 +55,43 @@ void Dots::count_distance_base()
 				min_i = j;
 			}
 		}
-		distances.push_back(cur_min_dist);
-		neighbour_i.push_back(min_i);
+		distances[i] = cur_min_dist;
+		neighbour_i[i] = min_i;
 	}
 
 }
 
+	// std::vector<Dot> dots;
+	// std::vector<float> distances;
+	// std::vector<int> neighbour_i;
+	// {1, 2}; {4, 2}; {9, 1}
 
-// std::vector<Dot> dots;
-// std::vector<float> distances;
-// std::vector<int> neighbour_i;
-// {1, 2}; {4, 2}; {9, 1}
 
+void Dots::count_distance_threads()
+{
+	// th_f (dots), len(dots): th_n ; start_i end_i
+	unsigned core_n = boost::thread::hardware_concurrency();
+	int block_l = dots.size() / core_n + 1;
+	std::vector<boost::thread *> threads;
+    int start_i, end_i;
+
+
+	for (int i=0; i<core_n; i++) 
+	{
+	    start_i = i * block_l;
+	    if (start_i + block_l >= dots.size())
+	    	end_i = dots.size() - 1;
+	    else
+	    	end_i = start_i + block_l - 1;
+	    threads.push_back(new boost::thread(&Dots::get_neighbours, this, start_i, end_i));
+	}
+
+    for (auto t: threads)
+	{
+		t->join();
+		delete t;
+	}
+}
 
 
 void Dots::print()
