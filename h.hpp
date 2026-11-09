@@ -22,9 +22,13 @@
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/asio.hpp>
 
+#include <cfloat>
 
+
+// #define EPS 1.e-7;
 
 #include "Dots.hpp"
+#include "Grid.hpp"
 
 
 #endif

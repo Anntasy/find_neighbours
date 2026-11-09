@@ -24,19 +24,25 @@ struct Dot
  	float y;
  };
 
+class Grid;
 class Dots
 {
 public:
 	std::vector<Dot> dots;
 	std::vector<float> distances;
 	std::vector<int> neighbour_i;
+	Grid *grid; // grid * grid (dynamic)
 
 	Dots();
+	Dots(int n_s);
 	~Dots();
 
 	void parse(std::string file_name);
+	void parse_grid(std::string file_name);
+
 	void count_distance_base();
 	void count_distance_threads();
+	void count_distance_base_grid();
 	void get_neighbours(int start_i, int end_i);
 	void print();
 
