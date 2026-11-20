@@ -1,5 +1,5 @@
 #include "h.hpp"
-# define DATA_NAME "data/data100_000.txt"
+# define DATA_NAME "data/data100.txt"
 
 
 // GITHUB
@@ -9,31 +9,23 @@
 
 void test1()
 {
-	Dots dots(100);
-	dots.parse_grid(DATA_NAME);
+	Dots dots(Mode::Grid, 1000000);
+	dots.parse(DATA_NAME);
 	// dots.grid->print_mp();
 	std::cout << "_____" << "\n";
-	dots.count_distance_base_grid();
+	dots.count_distance();
 	// dots.print();
 }
 
 
-void test2()
+void test4()
 {
-	Dots dots;
+	Dots dots(Mode::Grid_Thread, 100);
 	dots.parse(DATA_NAME);
+	// dots.grid->print_mp();
 	std::cout << "_____" << "\n";
-	dots.count_distance_base();
-	// dots.print();
-}
-
-
-void test3()
-{
-	Dots dots;
-	dots.parse(DATA_NAME);
-	std::cout << "_____" << "\n";
-	dots.count_distance_threads();
+	// dots.grid->debug_print("log.log");
+	dots.count_distance();
 	// dots.print();
 }
 
@@ -48,8 +40,8 @@ int main()
 
 	std::cout << "_____" << "\n";
 	{
-		OurTimer t("count_distance_base_grid");
-		test1();
+		OurTimer t("count_distance_base_grid_threads");
+		test4();
 	}
 }
 

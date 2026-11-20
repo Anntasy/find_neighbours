@@ -1,6 +1,34 @@
 #include "Grid.hpp"
 #include "h.hpp"
 
+// Дополнительные проходы раскрытия макросов
+#define DUMP_EXPAND(...)  DUMP_EXPAND4(DUMP_EXPAND4(DUMP_EXPAND4(DUMP_EXPAND4(__VA_ARGS__))))
+#define DUMP_EXPAND4(...) DUMP_EXPAND3(DUMP_EXPAND3(DUMP_EXPAND3(DUMP_EXPAND3(__VA_ARGS__))))
+#define DUMP_EXPAND3(...) DUMP_EXPAND2(DUMP_EXPAND2(DUMP_EXPAND2(DUMP_EXPAND2(__VA_ARGS__))))
+#define DUMP_EXPAND2(...) DUMP_EXPAND1(DUMP_EXPAND1(DUMP_EXPAND1(DUMP_EXPAND1(__VA_ARGS__))))
+#define DUMP_EXPAND1(...) __VA_ARGS__
+
+#define DUMP_PARENS ()
+
+#define DUMP_ONE(x)                                    \
+    dump_internal_stream_ << (dump_internal_first_ ? "" : ", ") \
+                          << #x << ": " << (x);        \
+    dump_internal_first_ = false;
+
+#define DUMP_IMPL(x, ...)                              \
+    DUMP_ONE(x)                                        \
+    __VA_OPT__(DUMP_AGAIN DUMP_PARENS (__VA_ARGS__))
+
+#define DUMP_AGAIN() DUMP_IMPL
+
+#define DUMP(...)                                      \
+    ([&]() -> std::string {                            \
+        std::ostringstream dump_internal_stream_;      \
+        [[maybe_unused]] bool dump_internal_first_ = true; \
+        __VA_OPT__(DUMP_EXPAND(DUMP_IMPL(__VA_ARGS__))) \
+        return dump_internal_stream_.str();            \
+    }())
+
 
 Grid::Grid(int n)
 {
@@ -79,7 +107,6 @@ std::pair<int, int> Grid::get_grid_coords(float x, float y)
 	}
 
 	return std::pair<int, int>(static_cast<int>(std::floor(x_s/s_)), static_cast<int>(std::floor(y_s/s_)));
-
 }
 
 void Grid::add_els(const Dot & d)
@@ -184,14 +211,70 @@ void Grid::i_to_j(int &n_x, int &n_y, int &j, int i)
 	int k=0;
 	for (;i>=n_el_s_row[k];k++)
 		;
-	i=k;
+	// i=k;
 	n_y = start.second+k/n_;
 	n_x = start.first+k%n_;
+
+	if (n_y > end.second)
+		n_y = end.second;
+
+	if (n_x > end.first)
+		n_x = end.first;
 
 	if (k > 0)
 		j = i-n_el_s_row[k-1];
 	else
 		j =i;
+}
+
+
+void Grid::debug_print(std::string file_name)
+{
+	std::ofstream file(file_name);
+	if (file.is_open())
+	//	std::map<std::pair<int, int>, std::vector<Dot>> mp;
+	{
+		for (const auto & [key, value]: mp)
+		{
+			file << key.first << ", " << key.second << ": " << value.size() << '\n';
+		}
+
+		file << "_____________\n";
+		for (int i=0; i<n_el_s_row.size(); i++)
+		{
+			file << i << ": " << n_el_s_row[i] <<  '\n';
+		}
+		file << "_____________\n";
+	    file << DUMP(start.first, start.second) << '\n';
+	    file << DUMP(end.first, end.second);
+		file << "_____________\n";
+
+		unsigned core_n = boost::thread::hardware_concurrency();
+		int block_l = c / core_n + 1;
+	    int start_i, end_i;
+
+		int n_x_start, n_y_start, j_start, n_x_end, n_y_end, j_end;
+
+		for (int i=0; i<core_n; i++)
+		{
+		    start_i = i * block_l;
+		    if (start_i + block_l >= c)
+		    	end_i = c - 1;
+		    else
+		    	end_i = start_i + block_l - 1;
+	    	file << DUMP(start_i, end_i) << '\n';
+
+
+	    	i_to_j(n_x_start, n_y_start, j_start, start_i);
+			i_to_j(n_x_end, n_y_end, j_end, end_i);
+
+			file << DUMP(n_x_start, n_y_start, j_start) << '\n';
+			file << DUMP(n_x_end, n_y_end, j_end) << '\n';
+
+		}
+
+	}
+	file.close();
 }
 
 

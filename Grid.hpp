@@ -22,6 +22,8 @@ public:
 
 	void print_mp();
 
+	void debug_print(std::string file_name);
+
 	std::vector<Dot> &get_dots(int i_x, int i_y);
 
 	std::vector<int> n_el_s_row;
